@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,6 +19,9 @@ public class GameManager : MonoBehaviour
     public Player Player;
 
     public GameState State { get; private set; }
+    public int Score { get; private set; }
+
+    public Action OnPlayerScored;
 
     private const float _cameraSpeed = 20f;
     private float _cameraOffset;
@@ -25,6 +29,12 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         State = GameState.Running;
+    }
+
+    public void IncreaseScore()
+    {
+        Score++;
+        OnPlayerScored?.Invoke();
     }
 
     private void Awake()

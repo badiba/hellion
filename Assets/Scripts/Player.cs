@@ -30,6 +30,7 @@ public class Player : MonoBehaviour
             Destroy(collision.gameObject.GetComponent<EdgeCollider2D>());
             HouseManager.MoveToNextTarget();
             OnEnteredHouse?.Invoke();
+            GameManager.Instance.IncreaseScore();
         }
     }
 
