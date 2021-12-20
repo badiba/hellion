@@ -14,7 +14,7 @@ public class Player : MonoBehaviour
     public Action OnDyingStarted;
     public Action OnDied;
 
-    private const float _activeGravityScale = 2f;
+    private const float _activeGravityScale = 5f;
     private Rigidbody2D _rigidBody2D;
     private Vector3 _startingPosition;
     private float _onHouseNormalizedHorizontalPosition;

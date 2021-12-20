@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
     public Action OnGameEnded;
     public Action OnGameRestarted;
 
-    private const float _speedIncreasePerDifficulty = 0.1f;
+    private const float _speedIncreasePerDifficulty = 0.2f;
     private const int _difficultyIncreaseInterval = 5;
     private int _difficulty = 0;
 
