@@ -30,6 +30,7 @@ public class HouseManager : MonoBehaviour
     
     private void Start()
     {
+        GameManager.Instance.OnGameRestarted += OnGameRestarted;
         InitializeHouses();
     }
 
@@ -55,5 +56,13 @@ public class HouseManager : MonoBehaviour
         var lastPlacedHouse = _houses[_houses.Count - 1];
         var lastPlacedHouseEdgePosition = isPlacingOnLeft ? lastPlacedHouse.LeftEdgePosition : lastPlacedHouse.RightEdgePosition;
         _houses.Add(Instantiate(HousePrefab, lastPlacedHouseEdgePosition + _housePlacementHeightGap, Quaternion.identity).GetComponent<House>());
+    }
+
+    private void OnGameRestarted()
+    {
+        _targetHouseIndex = 0;
+        _houses.ForEach(x => Destroy(x.gameObject));
+        _houses.Clear();
+        InitializeHouses();
     }
 }

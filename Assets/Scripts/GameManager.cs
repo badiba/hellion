@@ -20,15 +20,43 @@ public class GameManager : MonoBehaviour
 
     public GameState State { get; private set; }
     public int Score { get; private set; }
+    public int HighestScore { get; private set; }
     public int PassedHouseCount { get; private set; }
 
     public Action OnPlayerScored;
     public Action OnGameStarted;
     public Action OnGameEnded;
+    public Action OnGameRestarted;
 
     private const float _speedIncreasePerDifficulty = 0.1f;
     private const int _difficultyIncreaseInterval = 5;
     private int _difficulty = 0;
+
+    public void RestartGame()
+    {
+        _difficulty = 0;
+        PassedHouseCount = 0;
+        Score = 0;
+        State = GameState.WaitingToStart;
+        OnGameRestarted?.Invoke();
+    }
+
+    public void StartGame()
+    {
+        State = GameState.Playing;
+        OnGameStarted?.Invoke();
+    }
+
+    public void EndGame()
+    {
+        if (Score > HighestScore)
+        {
+            HighestScore = Score;
+        }
+
+        State = GameState.Ended;
+        OnGameEnded?.Invoke();
+    }
 
     private void Awake()
     {
@@ -47,37 +75,12 @@ public class GameManager : MonoBehaviour
     {
         State = GameState.WaitingToStart;
 
-        Player.OnStartedMoving += OnPlayerStartedMoving;
         Player.OnEnteredHouse += OnPlayerEnteredHouse;
-        Player.OnDied += OnPlayerDied;
     }
 
     private void Update()
     {
         
-    }
-
-    private void StartGame()
-    {
-        State = GameState.Playing;
-        OnGameStarted?.Invoke();
-    }
-
-    private void EndGame()
-    {
-        State = GameState.Ended;
-        Time.timeScale = 0f;
-        OnGameEnded?.Invoke();
-    }
-
-    private void OnPlayerStartedMoving()
-    {
-        StartGame();
-    }
-
-    private void OnPlayerDied()
-    {
-        EndGame();
     }
 
     private void OnPlayerEnteredHouse()

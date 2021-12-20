@@ -11,12 +11,16 @@ public class Player : MonoBehaviour
     public Action OnStartedMoving;
     public Action OnEnteredHouse;
     public Action OnLeftHouse;
+    public Action OnDyingStarted;
     public Action OnDied;
 
+    private const float _activeGravityScale = 2f;
     private Rigidbody2D _rigidBody2D;
+    private Vector3 _startingPosition;
     private float _onHouseNormalizedHorizontalPosition;
     private int _onHouseDirection = 1;
     private bool _isOnGround = true;
+    private bool _isAlive = true;
 
     public void SetOnHouseSpeed(float speed)
     {
@@ -25,6 +29,9 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
+        GameManager.Instance.OnGameRestarted += OnGameRestarted;
+
+        _startingPosition = transform.position;
         _rigidBody2D = GetComponent<Rigidbody2D>();
         _rigidBody2D.gravityScale = 0;
     }
@@ -57,6 +64,11 @@ public class Player : MonoBehaviour
                 }
 
                 UpdatePosition();
+
+                if (_isAlive && transform.position.y < HouseManager.NextHouse.transform.position.y)
+                {
+                    Die();
+                }
                 break;
             case GameManager.GameState.Paused:
                 break;
@@ -83,13 +95,6 @@ public class Player : MonoBehaviour
                 LeaveHouse();
             }
         }
-        else
-        {
-            if (transform.position.y < HouseManager.NextHouse.transform.position.y)
-            {
-                Die();
-            }
-        }
     }
 
     private void StartMoving()
@@ -98,6 +103,7 @@ public class Player : MonoBehaviour
         var nextHousePosition = HouseManager.NextHouse.transform.position;
         _onHouseDirection = nextHousePosition.x > targetHousePosition.x ? 1 : -1;
         OnStartedMoving?.Invoke();
+        GameManager.Instance.StartGame();
     }
 
     private void SwitchDirection()
@@ -116,7 +122,7 @@ public class Player : MonoBehaviour
 
     private void LeaveHouse()
     {
-        _rigidBody2D.gravityScale = 2;
+        _rigidBody2D.gravityScale = _activeGravityScale;
         _isOnGround = false;
         _onHouseNormalizedHorizontalPosition = 0;
         OnLeftHouse?.Invoke();
@@ -124,6 +130,33 @@ public class Player : MonoBehaviour
 
     private void Die()
     {
+        _isAlive = false;
+        _rigidBody2D.gravityScale = 0;
+        _rigidBody2D.velocity = Vector2.zero;
+        OnDyingStarted?.Invoke();
+
+        StartCoroutine(Fall());
+    }
+
+    private IEnumerator Fall()
+    {
+        yield return new WaitForSeconds(1);
+
+        _rigidBody2D.gravityScale = _activeGravityScale;
+
         OnDied?.Invoke();
+        GameManager.Instance.EndGame();
+    }
+
+    private void OnGameRestarted()
+    {
+        _rigidBody2D.gravityScale = 0;
+        _rigidBody2D.velocity = Vector2.zero;
+        transform.position = _startingPosition;
+        OnHouseSpeed = 2f;
+        _onHouseNormalizedHorizontalPosition = 0f;
+        _onHouseDirection = 1;
+        _isOnGround = true;
+        _isAlive = true;
     }
 }
