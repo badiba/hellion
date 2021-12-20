@@ -1,33 +1,75 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public enum GameState
+    {
+        WaitingToStart,
+        Running,
+        Paused
+    }
+
+    public static GameManager Instance;
+
     public Camera MainCamera;
     public Player Player;
+
+    public GameState State { get; private set; }
 
     private const float _cameraSpeed = 20f;
     private float _cameraOffset;
 
+    public void StartGame()
+    {
+        State = GameState.Running;
+    }
+
+    private void Awake()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+    }
+
     private void Start()
     {
+        State = GameState.WaitingToStart;
         _cameraOffset = MainCamera.transform.position.y - Player.transform.position.y;
     }
 
     private void Update()
     {
-        UpdateCameraPosition();
+        switch (State)
+        {
+            case GameState.WaitingToStart:
+                break;
+            case GameState.Running:
+                UpdateCameraPosition();
+                break;
+            default:
+                break;
+        }
     }
 
     private void UpdateCameraPosition()
     {
-        var targetVector = new Vector3(Player.transform.position.x, Player.transform.position.y + _cameraOffset, -10);
+        var playerPosition = Player.transform.position;
+        var targetCameraPosition = new Vector3(playerPosition.x, playerPosition.y + _cameraOffset, -10);
+        var mainCameraTransform = MainCamera.transform;
 
-        if (targetVector.y < MainCamera.transform.position.y)
+        if (targetCameraPosition.y < mainCameraTransform.position.y)
         {
-            var cameraSpeed = (MainCamera.transform.position.y - targetVector.y) * _cameraSpeed * Time.deltaTime;
-            MainCamera.transform.position = Vector3.MoveTowards(MainCamera.transform.position, targetVector, cameraSpeed);
+            var cameraSpeed = (mainCameraTransform.position.y - targetCameraPosition.y) * _cameraSpeed * Time.deltaTime;
+            mainCameraTransform.position = Vector3.MoveTowards(mainCameraTransform.position, targetCameraPosition, cameraSpeed);
         }
     }
 }

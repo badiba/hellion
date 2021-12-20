@@ -35,11 +35,34 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            _onHouseDirection *= -1;
-        }
+        var isMovementOrderGiven = Input.GetKeyDown(KeyCode.X);
 
+        switch (GameManager.Instance.State)
+        {
+            case GameManager.GameState.WaitingToStart:
+                if (isMovementOrderGiven)
+                {
+                    StartMoving();
+                }
+
+                break;
+            case GameManager.GameState.Running:
+                if (isMovementOrderGiven)
+                {
+                    SwitchDirection();
+                }
+
+                UpdatePosition();
+                break;
+            case GameManager.GameState.Paused:
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void UpdatePosition()
+    {
         if (_isOnGround)
         {
             var targetHouse = HouseManager.TargetHouse;
@@ -59,5 +82,18 @@ public class Player : MonoBehaviour
                 OnLeftHouse?.Invoke();
             }
         }
+    }
+
+    private void StartMoving()
+    {
+        var targetHousePosition = HouseManager.TargetHouse.transform.position;
+        var nextHousePosition = HouseManager.NextHouse.transform.position;
+        _onHouseDirection = nextHousePosition.x > targetHousePosition.x ? 1 : -1;
+        GameManager.Instance.StartGame();
+    }
+
+    private void SwitchDirection()
+    {
+        _onHouseDirection *= -1;
     }
 }
