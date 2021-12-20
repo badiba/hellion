@@ -1492,4 +1492,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Player: {fileID: 1633325809}
   ScoreTextWidget: {fileID: 131563227}
+  PausePanelScoreText: {fileID: 1118240344}
+  PausePanelHighestScoreText: {fileID: 807693259}
   PausePanel: {fileID: 1263999293}

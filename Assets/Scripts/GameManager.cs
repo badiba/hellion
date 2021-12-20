@@ -43,6 +43,9 @@ public class GameManager : MonoBehaviour
 
     public void StartGame()
     {
+        var saveData = SaveManager.LoadGame();
+        HighestScore = saveData.HighestScore;
+
         State = GameState.Playing;
         OnGameStarted?.Invoke();
     }
@@ -52,6 +55,7 @@ public class GameManager : MonoBehaviour
         if (Score > HighestScore)
         {
             HighestScore = Score;
+            SaveManager.SaveGame();
         }
 
         State = GameState.Ended;

@@ -6,19 +6,19 @@ public static class SaveManager
 {
     public static void SaveGame()
     {
-        // TODO
         var formatter = new BinaryFormatter();
-        var path = Application.persistentDataPath + "/save.bcs";
-        var stream = new FileStream(path, FileMode.Create);
-        var saveData = SaveData.Default;
-        formatter.Serialize(stream, saveData);
-        stream.Close();
+        string path = Path.Combine(Application.persistentDataPath, "save.bcs");
+
+        using (var stream = new FileStream(path, FileMode.Create))
+        {
+            var saveData = new SaveData(GameManager.Instance.HighestScore, true);
+            formatter.Serialize(stream, saveData);
+        }
     }
 
     public static SaveData LoadGame()
     {
-        // TODO
-        string path = Application.persistentDataPath + "/save.bcs";
+        string path = Path.Combine(Application.persistentDataPath, "save.bcs");
         var saveData = SaveData.Default;
 
         if (File.Exists(path))
