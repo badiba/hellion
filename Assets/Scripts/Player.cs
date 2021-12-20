@@ -8,8 +8,10 @@ public class Player : MonoBehaviour
     public float OnHouseSpeed { get; private set; } = 2f;
 
     public HouseManager HouseManager;
+    public Action OnStartedMoving;
     public Action OnEnteredHouse;
     public Action OnLeftHouse;
+    public Action OnDied;
 
     private Rigidbody2D _rigidBody2D;
     private float _onHouseNormalizedHorizontalPosition;
@@ -48,7 +50,7 @@ public class Player : MonoBehaviour
                 }
 
                 break;
-            case GameManager.GameState.Running:
+            case GameManager.GameState.Playing:
                 if (isMovementOrderGiven)
                 {
                     SwitchDirection();
@@ -81,6 +83,13 @@ public class Player : MonoBehaviour
                 LeaveHouse();
             }
         }
+        else
+        {
+            if (transform.position.y < HouseManager.NextHouse.transform.position.y)
+            {
+                Die();
+            }
+        }
     }
 
     private void StartMoving()
@@ -88,7 +97,7 @@ public class Player : MonoBehaviour
         var targetHousePosition = HouseManager.TargetHouse.transform.position;
         var nextHousePosition = HouseManager.NextHouse.transform.position;
         _onHouseDirection = nextHousePosition.x > targetHousePosition.x ? 1 : -1;
-        GameManager.Instance.StartGame();
+        OnStartedMoving?.Invoke();
     }
 
     private void SwitchDirection()
@@ -111,5 +120,10 @@ public class Player : MonoBehaviour
         _isOnGround = false;
         _onHouseNormalizedHorizontalPosition = 0;
         OnLeftHouse?.Invoke();
+    }
+
+    private void Die()
+    {
+        OnDied?.Invoke();
     }
 }

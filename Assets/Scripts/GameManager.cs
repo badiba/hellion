@@ -9,13 +9,13 @@ public class GameManager : MonoBehaviour
     public enum GameState
     {
         WaitingToStart,
-        Running,
-        Paused
+        Playing,
+        Paused,
+        Ended
     }
 
     public static GameManager Instance;
 
-    public Camera MainCamera;
     public Player Player;
 
     public GameState State { get; private set; }
@@ -23,18 +23,12 @@ public class GameManager : MonoBehaviour
     public int PassedHouseCount { get; private set; }
 
     public Action OnPlayerScored;
+    public Action OnGameStarted;
+    public Action OnGameEnded;
 
     private const float _speedIncreasePerDifficulty = 0.1f;
     private const int _difficultyIncreaseInterval = 5;
-    private const float _cameraSpeed = 20f;
-    private float _cameraOffset;
     private int _difficulty = 0;
-
-    public void StartGame()
-    {
-        State = GameState.Running;
-        Player.OnEnteredHouse += OnPlayerEnteredHouse;
-    }
 
     private void Awake()
     {
@@ -52,34 +46,38 @@ public class GameManager : MonoBehaviour
     private void Start()
     {
         State = GameState.WaitingToStart;
-        _cameraOffset = MainCamera.transform.position.y - Player.transform.position.y;
+
+        Player.OnStartedMoving += OnPlayerStartedMoving;
+        Player.OnEnteredHouse += OnPlayerEnteredHouse;
+        Player.OnDied += OnPlayerDied;
     }
 
     private void Update()
     {
-        switch (State)
-        {
-            case GameState.WaitingToStart:
-                break;
-            case GameState.Running:
-                UpdateCameraPosition();
-                break;
-            default:
-                break;
-        }
+        
     }
 
-    private void UpdateCameraPosition()
+    private void StartGame()
     {
-        var playerPosition = Player.transform.position;
-        var targetCameraPosition = new Vector3(playerPosition.x, playerPosition.y + _cameraOffset, -10);
-        var mainCameraTransform = MainCamera.transform;
+        State = GameState.Playing;
+        OnGameStarted?.Invoke();
+    }
 
-        if (targetCameraPosition.y < mainCameraTransform.position.y)
-        {
-            var cameraSpeed = (mainCameraTransform.position.y - targetCameraPosition.y) * _cameraSpeed * Time.deltaTime;
-            mainCameraTransform.position = Vector3.MoveTowards(mainCameraTransform.position, targetCameraPosition, cameraSpeed);
-        }
+    private void EndGame()
+    {
+        State = GameState.Ended;
+        Time.timeScale = 0f;
+        OnGameEnded?.Invoke();
+    }
+
+    private void OnPlayerStartedMoving()
+    {
+        StartGame();
+    }
+
+    private void OnPlayerDied()
+    {
+        EndGame();
     }
 
     private void OnPlayerEnteredHouse()
