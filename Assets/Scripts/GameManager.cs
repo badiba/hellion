@@ -20,21 +20,20 @@ public class GameManager : MonoBehaviour
 
     public GameState State { get; private set; }
     public int Score { get; private set; }
+    public int PassedHouseCount { get; private set; }
 
     public Action OnPlayerScored;
 
+    private const float _speedIncreasePerDifficulty = 0.1f;
+    private const int _difficultyIncreaseInterval = 5;
     private const float _cameraSpeed = 20f;
     private float _cameraOffset;
+    private int _difficulty = 0;
 
     public void StartGame()
     {
         State = GameState.Running;
-    }
-
-    public void IncreaseScore()
-    {
-        Score++;
-        OnPlayerScored?.Invoke();
+        Player.OnEnteredHouse += OnPlayerEnteredHouse;
     }
 
     private void Awake()
@@ -81,5 +80,24 @@ public class GameManager : MonoBehaviour
             var cameraSpeed = (mainCameraTransform.position.y - targetCameraPosition.y) * _cameraSpeed * Time.deltaTime;
             mainCameraTransform.position = Vector3.MoveTowards(mainCameraTransform.position, targetCameraPosition, cameraSpeed);
         }
+    }
+
+    private void OnPlayerEnteredHouse()
+    {
+        Score++;
+        PassedHouseCount++;
+
+        if (PassedHouseCount % _difficultyIncreaseInterval == 0)
+        {
+            IncreaseDifficulty();
+        }
+
+        OnPlayerScored?.Invoke();
+    }
+
+    private void IncreaseDifficulty()
+    {
+        _difficulty++;
+        Player.SetOnHouseSpeed(Player.OnHouseSpeed + _speedIncreasePerDifficulty);
     }
 }

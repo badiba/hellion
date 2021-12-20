@@ -5,15 +5,21 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public float OnHouseSpeed { get; private set; } = 2f;
+
     public HouseManager HouseManager;
     public Action OnEnteredHouse;
     public Action OnLeftHouse;
 
     private Rigidbody2D _rigidBody2D;
     private float _onHouseNormalizedHorizontalPosition;
-    private float _onHouseSpeed = 2;
     private int _onHouseDirection = 1;
     private bool _isOnGround = true;
+
+    public void SetOnHouseSpeed(float speed)
+    {
+        OnHouseSpeed = speed;
+    }
 
     private void Start()
     {
@@ -25,12 +31,7 @@ public class Player : MonoBehaviour
     {
         if (collision.gameObject == HouseManager.NextHouse?.gameObject)
         {
-            _rigidBody2D.gravityScale = 0;
-            _isOnGround = true;
-            Destroy(collision.gameObject.GetComponent<EdgeCollider2D>());
-            HouseManager.MoveToNextTarget();
-            OnEnteredHouse?.Invoke();
-            GameManager.Instance.IncreaseScore();
+            EnterHouse(collision.gameObject);
         }
     }
 
@@ -67,7 +68,7 @@ public class Player : MonoBehaviour
         if (_isOnGround)
         {
             var targetHouse = HouseManager.TargetHouse;
-            _onHouseNormalizedHorizontalPosition += _onHouseDirection * _onHouseSpeed * Time.deltaTime;
+            _onHouseNormalizedHorizontalPosition += _onHouseDirection * OnHouseSpeed * Time.deltaTime;
             _onHouseNormalizedHorizontalPosition = Mathf.Clamp(_onHouseNormalizedHorizontalPosition, -1, 1);
 
             var lerpStart = targetHouse.transform.position + new Vector3(0, 1, -1);
@@ -77,10 +78,7 @@ public class Player : MonoBehaviour
 
             if (_onHouseNormalizedHorizontalPosition <= -1 || _onHouseNormalizedHorizontalPosition >= 1)
             {
-                _rigidBody2D.gravityScale = 1;
-                _isOnGround = false;
-                _onHouseNormalizedHorizontalPosition = 0;
-                OnLeftHouse?.Invoke();
+                LeaveHouse();
             }
         }
     }
@@ -96,5 +94,22 @@ public class Player : MonoBehaviour
     private void SwitchDirection()
     {
         _onHouseDirection *= -1;
+    }
+
+    private void EnterHouse(GameObject house)
+    {
+        _rigidBody2D.gravityScale = 0;
+        _isOnGround = true;
+        Destroy(house.GetComponent<EdgeCollider2D>());
+        HouseManager.MoveToNextTarget();
+        OnEnteredHouse?.Invoke();
+    }
+
+    private void LeaveHouse()
+    {
+        _rigidBody2D.gravityScale = 2;
+        _isOnGround = false;
+        _onHouseNormalizedHorizontalPosition = 0;
+        OnLeftHouse?.Invoke();
     }
 }
